@@ -331,5 +331,95 @@ BackendCryptoPP::Ecdsa256::PrivateKey BackendCryptoPP::internal_private_key(cons
     return key;
 }
 
+bool BackendCryptoPP::encrypt_aes(const ByteBuffer& data, MessageEncryptionParams::AES& params)
+{
+    // Generate random key A, 16 octets.
+    m_prng.GenerateBlock(params.key.data(), params.key.size());
+
+    // Generate random nonce n, 12 octets.
+    m_prng.GenerateBlock(params.nonce.data(), params.nonce.size());
+
+    AesEncryption encryption;
+    encryption.SetKeyWithIV(params.key.data(), params.key.size(),
+                            params.nonce.data(), params.nonce.size());
+    encryption.SpecifyDataLengths(0, data.size(), 0);
+
+    try {
+        CryptoPP::VectorSource ss1(data, true,
+            new CryptoPP::AuthenticatedEncryptionFilter(encryption,
+                new CryptoPP::VectorSink(params.result)
+            )
+        );
+    }
+    catch (CryptoPP::Exception &e) {
+        return false;
+    }
+
+    return true;
+}
+
+bool BackendCryptoPP::decrypt_aes(const ByteBuffer& data, MessageEncryptionParams::AES& params)
+{
+    AesDecryption decryption;
+    decryption.SetKeyWithIV(params.key.data(), params.key.size(),
+                            params.nonce.data(), params.nonce.size());
+    decryption.SpecifyDataLengths(0, data.size() - 16, 0);
+
+    try {
+        CryptoPP::VectorSource ss2(data, true,
+            new CryptoPP::AuthenticatedDecryptionFilter(decryption,
+                new CryptoPP::VectorSink(params.result)
+            )
+        );
+    }
+    catch(CryptoPP::Exception& e) {
+        return false;
+    }
+
+    return true;
+}
+
+void BackendCryptoPP::encrypt_ecies(const ByteBuffer& data, MessageEncryptionParams::ECIES& params)
+{
+    CryptoPP::DL_KeyAgreementAlgorithm_DH<CryptoPP::ECP::Point, CryptoPP::IncompatibleCofactorMultiplication> agreeAlg;
+    CryptoPP::DL_KeyDerivationAlgorithm_P1363<CryptoPP::ECP::Point, false, CryptoPP::P1363_KDF2<CryptoPP::SHA256>> derivAlg;
+    CryptoPP::DL_EncryptionAlgorithm_Xor<CryptoPP::HMAC<CryptoPP::SHA256>, false> encAlg;
+    PublicKey pk = m_public_cache[params.encryptionPubKey];
+    CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> groupParams = pk.AccessGroupParameters();
+
+    // Generate ephemeral keypair.
+    CryptoPP::Integer x(m_prng, CryptoPP::Integer::One(), groupParams.GetMaxExponent());
+    CryptoPP::ECP::Point q = groupParams.ExponentiateBase(x);
+    q.x.Encode(params.ephemeralPubKey.x.data(), params.ephemeralPubKey.x.size());
+    q.y.Encode(params.ephemeralPubKey.y.data(), params.ephemeralPubKey.y.size());
+
+    // Agree on shared secret.
+    CryptoPP::ECP::Point z = agreeAlg.AgreeWithEphemeralPrivateKey(groupParams, pk.GetPublicPrecomputation(), x);
+
+    // Derive keys.
+    CryptoPP::byte digest[CryptoPP::SHA256::DIGESTSIZE];
+    CryptoPP::SHA256().CalculateDigest(digest, params.p1.data(), params.p1.size());
+    CryptoPP::ConstByteArrayParameter p1(digest, CryptoPP::SHA256::DIGESTSIZE, true);
+    CryptoPP::SecByteBlock derivedKey(48);
+    derivAlg.Derive(groupParams, derivedKey, derivedKey.size(), z, q, CryptoPP::MakeParameters(CryptoPP::Name::KeyDerivationParameters(), p1));
+
+    CryptoPP::byte* cipherKey = derivedKey.data();
+    CryptoPP::byte* macKey = derivedKey.data() + data.size();
+
+    // Calculate cipher.
+    if (data.size()) {
+        CryptoPP::xorbuf(params.cipher.data(), data.data(), cipherKey, data.size());
+    }
+
+    // Calculate tag.
+    CryptoPP::HMAC<CryptoPP::SHA256> mac(macKey, 32);
+    CryptoPP::byte tag[32];
+    mac.Update(params.cipher.data(), data.size());
+    mac.Final(tag);
+
+    // Tag is truncated to leftmost 128 bits.
+    std::copy_n(tag, params.tag.size(), params.tag.data());
+}
+
 } // namespace security
 } // namespace vanetza

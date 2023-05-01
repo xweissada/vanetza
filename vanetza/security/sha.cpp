@@ -30,5 +30,24 @@ Sha256Digest calculate_sha256_digest(uint8_t* data, std::size_t len)
     return digest;
 }
 
+Sha384Digest calculate_sha384_digest(uint8_t* data, std::size_t len)
+{
+    Sha384Digest digest;
+#if defined VANETZA_WITH_OPENSSL
+    static_assert(SHA384_DIGEST_LENGTH == digest.size(), "size of OpenSSL SHA384_DIGEST_LENGTH does not match");
+    SHA512_CTX ctx;
+    SHA384_Init(&ctx);
+    SHA384_Update(&ctx, data, len);
+    SHA384_Final(digest.data(), &ctx);
+#elif defined VANETZA_WITH_CRYPTOPP
+    static_assert(CryptoPP::SHA384::DIGESTSIZE == digest.size(), "size of CryptoPP::SHA384 diges does not match");
+    CryptoPP::SHA384 hash;
+    hash.CalculateDigest(digest.data(), data, len);
+#else
+#   error "no SHA256 implementation available"
+#endif
+    return digest;
+}
+
 } // namespace security
 } // namespace vanetza

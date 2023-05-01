@@ -6,6 +6,7 @@
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
+#include <cryptopp/ccm.h>
 
 namespace vanetza
 {
@@ -20,6 +21,8 @@ public:
     using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
     using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
     using Point = CryptoPP::ECP::Point;
+    using AesEncryption = CryptoPP::CCM<CryptoPP::AES>::Encryption;
+    using AesDecryption = CryptoPP::CCM<CryptoPP::AES>::Decryption;
 
     static constexpr auto backend_name = "CryptoPP";
 
@@ -39,6 +42,29 @@ public:
      * \return generated key pair
      */
     ecdsa256::KeyPair generate_key_pair();
+
+    /**
+     * \brief encrypt data with AES-CCM algorithm
+     * \param data data to be encrypted
+     * \param params key, nonce and result of encryption
+     * \return true if encryption succeeded, false else
+     */
+    bool encrypt_aes(const ByteBuffer& data, MessageEncryptionParams::AES& params);
+
+    /**
+     * \brief decrypt data with AES-CCM algorithm
+     * \param data data to be decrypted
+     * \param params key, nonce and result of decryption
+     * \return true if decryption succeeded, false else
+     */
+    bool decrypt_aes(const ByteBuffer& data, MessageEncryptionParams::AES& params);
+
+    /**
+     * \brief encrypt data with ECIES algorithm
+     * \param data data to be encrypted
+     * \param params public key and parameter P1 as input; ephemeral public key, ciphertext and authentication tag as output
+    */
+    void encrypt_ecies(const ByteBuffer& data, MessageEncryptionParams::ECIES& params);
 
 private:
     /// internal sign method using crypto++ private key

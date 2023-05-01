@@ -14,6 +14,28 @@ namespace vanetza
 namespace security
 {
 
+struct MessageEncryptionParams
+{
+    struct AES
+    {
+        std::array<uint8_t, 16> key;    ///< Key used for encryption.
+        std::array<uint8_t, 12> nonce;  ///< Nonce/IV used for encryption.
+        vanetza::ByteBuffer result;     ///< Ciphertext or plaintext result.
+    };
+
+    struct ECIES
+    {
+        ecdsa256::PublicKey encryptionPubKey;
+        vanetza::ByteBuffer p1;
+        ecdsa256::PublicKey ephemeralPubKey;  ///< Ephemeral public key.
+        std::array<uint8_t, 16> cipher;       ///< Encryption ciphertext.
+        std::array<uint8_t, 16> tag;          ///< Authentication tag.
+    };
+
+    AES aes;
+    ECIES ecies;
+};
+
 /**
  * Interface to cryptographic features
  */

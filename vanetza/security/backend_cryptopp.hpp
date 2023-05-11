@@ -66,6 +66,14 @@ public:
     */
     void encrypt_ecies(const ByteBuffer& data, MessageEncryptionParams::ECIES& params);
 
+    /**
+     * \brief generate HMAC key and create HMAC tag on data
+     * \param data data to be tagged
+     * \param hmacKey generated HMAC key
+     * \return tag of data generated with hmacKey
+    */
+    KeyTag create_tag(const ByteBuffer& data, HmacKey& hmacKey);
+
 private:
     /// internal sign method using crypto++ private key
     EcdsaSignature sign_data(const PrivateKey& key, const ByteBuffer& data);

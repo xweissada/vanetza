@@ -97,6 +97,11 @@ if(BUILD_BENCHMARK)
   add_subdirectory(tools/benchmark)
 endif()
 
+option(BUILD_V2CAT "Build v2cat application" OFF)
+if (BUILD_V2CAT)
+  add_subdirectory(tools/v2cat)
+endif()
+
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)

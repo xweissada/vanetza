@@ -36,6 +36,14 @@ public:
     /// \see Backend::decompress_point
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;
 
+    /**
+     * \brief encrypt data with AES-CCM algorithm
+     * \param data data to be encrypted
+     * \param params key, nonce and result of encryption
+     * \return true if encryption succeeded, false else
+     */
+    bool encrypt_aes(const ByteBuffer& data, MessageEncryptionParams::AES& params);
+
 private:
     /// calculate SHA256 digest of data buffer
     std::array<uint8_t, 32> calculate_digest(const ByteBuffer& data) const;

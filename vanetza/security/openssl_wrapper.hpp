@@ -6,6 +6,7 @@
 #include <openssl/bn.h>
 #include <openssl/ecdsa.h>
 #include <openssl/err.h>
+#include <openssl/evp.h>
 #include <array>
 #include <cstdint>
 #include <stdexcept>
@@ -138,6 +139,21 @@ public:
 
 private:
     EC_KEY* eckey;
+};
+
+class Aes
+{
+public:
+    const size_t IV_LENGTH  = 12;
+    const size_t TAG_LENGTH = 16;
+
+    Aes(const std::array<uint8_t, 16>& key, const std::array<uint8_t, 12>& nonce);
+    ByteBuffer Encrypt(const ByteBuffer& data);
+    void Decrypt();
+    ~Aes();
+
+private:
+    EVP_CIPHER_CTX *ctx;
 };
 
 } // namespace openssl

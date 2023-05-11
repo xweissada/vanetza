@@ -183,12 +183,14 @@ int main(int argc, const char** argv)
       std::cerr << "Enrolment failed." << std::endl;
       return 1;
     }
+    cm.SaveVerificationKey("ECVerificationKey");
     cm.SaveEc("EnrolmentCredential");
 
     if (!cm.RequestAt()) {
       std::cerr << "Authorization failed failed." << std::endl;
       return 1;
     }
+    cm.SaveVerificationKey("ATVerificationKey");
     cm.SaveAt("AuthorizationTicket");
 
     return 0;

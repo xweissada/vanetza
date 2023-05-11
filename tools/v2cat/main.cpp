@@ -115,6 +115,7 @@ int main(int argc, const char** argv)
       std::cerr << "Enrolment failed." << std::endl;
       return 1;
     }
+    cm.SaveVerificationKey("ECVerificationKey");
     cm.SaveEc("EnrolmentCredential");
 
     return 0;
@@ -150,6 +151,7 @@ int main(int argc, const char** argv)
       std::cerr << "Authorization failed failed." << std::endl;
       return 1;
     }
+    cm.SaveVerificationKey("ATVerificationKey");
     cm.SaveAt("AuthorizationTicket");
 
     return 0;

@@ -165,6 +165,39 @@ Key::~Key()
     EC_KEY_free(eckey);
 }
 
+Aes::Aes(const std::array<uint8_t, 16>& key, const std::array<uint8_t, 12>& nonce)
+{
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_aes_128_ccm(), NULL, NULL, NULL);
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_IVLEN, IV_LENGTH, NULL);
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_SET_TAG, TAG_LENGTH, NULL);
+    EVP_EncryptInit_ex2(ctx, NULL, key.data(), nonce.data(), NULL);
+}
+
+ByteBuffer Aes::Encrypt(const ByteBuffer& data)
+{
+    int len;
+    int ciphertext_len;
+    ByteBuffer result(data.size() + TAG_LENGTH);
+
+    EVP_EncryptUpdate(ctx, NULL, &len, NULL, data.size());
+
+    EVP_EncryptUpdate(ctx, result.data(), &len, data.data(), data.size());
+    ciphertext_len = len;
+
+    EVP_EncryptFinal_ex(ctx, result.data() + ciphertext_len, &len);
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_CCM_GET_TAG, TAG_LENGTH, result.data() + ciphertext_len);
+
+    return result;
+}
+
+Aes::~Aes()
+{
+    EVP_CIPHER_CTX_free(ctx);
+}
+
 } // namespace openssl
 } // namespace security
 } // namespace vanetza

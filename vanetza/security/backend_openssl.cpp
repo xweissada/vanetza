@@ -8,6 +8,8 @@
 #include <openssl/ecdsa.h>
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
 #include <cassert>
 
 namespace vanetza
@@ -170,6 +172,20 @@ boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& e
     } else {
         return boost::none;
     }
+}
+
+bool BackendOpenSsl::encrypt_aes(const ByteBuffer& data, MessageEncryptionParams::AES& params)
+{
+    if (!RAND_bytes(params.key.data(), params.key.size()))
+        return false;
+
+    if (!RAND_bytes(params.nonce.data(), params.nonce.size()))
+        return false;
+
+    openssl::Aes aes(params.key, params.nonce);
+    params.result = aes.Encrypt(data);
+
+    return true;
 }
 
 ByteBuffer BackendOpenSsl::calculate_hash(KeyType key, const ByteBuffer& data)

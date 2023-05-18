@@ -36,19 +36,19 @@ public:
 
   /// @brief Get certificate trust list from root CA distribution centre.
   /// @param rcaHash Hash of root CA certificate.
-  void GetCtl(const vanetza::security::HashedId8& rcaHash);
+  bool GetCtl(const vanetza::security::HashedId8& rcaHash);
 
   /// @brief Get delta certificate trust list from root CA distribution centre.
   /// @param rcaHash        Hash of root CA certificate.
   /// @param sequenceNumber Sequence number of last known list.
-  void GetDeltaCtl(const vanetza::security::HashedId8& rcaHash, unsigned sequenceNumber);
+  bool GetDeltaCtl(const vanetza::security::HashedId8& rcaHash, unsigned sequenceNumber);
 
   /// @brief Get certificate revocation list from root CA distribution centre.
   /// @param rcaHash Hash of root CA certificate.
-  void GetCrl(const vanetza::security::HashedId8& rcaHash);
+  bool GetCrl(const vanetza::security::HashedId8& rcaHash);
 
   /// @brief Get european certificate trust list.
-  void GetEctl();
+  bool GetEctl();
 
   /// @brief Return RcaEntry from saved entries, this includes root CA
   /// certificate, certificate and access point for EA and AA

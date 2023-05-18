@@ -58,7 +58,8 @@ int main(int argc, const char** argv)
 
   if (vm.count("ectl")) {
     CertificateTrustListManager ctlm;
-    ctlm.GetEctl();
+    if (!ctlm.GetEctl())
+      return 1;
 
     std::cout << "ECTL includes:" << std::endl;
     ctlm.PrintRca();
@@ -81,7 +82,8 @@ int main(int argc, const char** argv)
     CertificateTrustListManager ctlm(*rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
-    ctlm.GetCtl(certHash);
+    if (!ctlm.GetCtl(certHash))
+      return 1;
 
     std::cout << "CTL includes:" << std::endl;
     ctlm.PrintRca();
@@ -106,7 +108,8 @@ int main(int argc, const char** argv)
     CertificateTrustListManager ctlm(*rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
-    ctlm.GetCtl(certHash);
+    if (!ctlm.GetCtl(certHash))
+      return 1;
 
     ecdsa256::KeyPair canonicalKeyPair = load_private_key_from_file(keyPath);
 
@@ -138,7 +141,8 @@ int main(int argc, const char** argv)
     CertificateTrustListManager ctlm(*rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
-    ctlm.GetCtl(certHash);
+    if (!ctlm.GetCtl(certHash))
+      return 1;
 
     ecdsa256::KeyPair verKeyPair = load_private_key_from_file(keyPath);
 
@@ -174,7 +178,8 @@ int main(int argc, const char** argv)
     CertificateTrustListManager ctlm(*rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
-    ctlm.GetCtl(certHash);
+    if (!ctlm.GetCtl(certHash))
+      return 1;
 
     ecdsa256::KeyPair canonicalKeyPair = load_private_key_from_file(keyPath);
 

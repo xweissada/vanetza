@@ -11,6 +11,7 @@ add_vanetza_component(security
     ecdsa256.cpp
     encryption_parameter.cpp
     header_field.cpp
+    hmac.cpp
     int_x.cpp
     length_coding.cpp
     naive_certificate_provider.cpp

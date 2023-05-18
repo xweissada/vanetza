@@ -345,7 +345,8 @@ void CertificateManager::GenerateAtKeys(PublicVerificationKey& verKey)
 
   vanetza::ByteBuffer verKeyBuf = vanetza::asn1::encode_oer(asn_DEF_PublicVerificationKey, &verKey);
 
-  keyTag = backend.create_tag(verKeyBuf, hmacKey);
+  hmacKey = backend.generate_hmac_key();
+  keyTag = create_hmac_tag(verKeyBuf, hmacKey);
 }
 
 void CertificateManager::ConstructSharedAtRequest(SharedAtRequest& sharedAtReq)

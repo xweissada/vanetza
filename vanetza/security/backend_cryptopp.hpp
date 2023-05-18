@@ -3,6 +3,7 @@
 
 #include <vanetza/common/lru_cache.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/hmac.hpp>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
@@ -67,12 +68,10 @@ public:
     void encrypt_ecies(const ByteBuffer& data, MessageEncryptionParams::ECIES& params);
 
     /**
-     * \brief generate HMAC key and create HMAC tag on data
-     * \param data data to be tagged
-     * \param hmacKey generated HMAC key
-     * \return tag of data generated with hmacKey
+     * \brief generate a 32 byte long HMAC key
+     * \return generated key
     */
-    KeyTag create_tag(const ByteBuffer& data, HmacKey& hmacKey);
+    HmacKey generate_hmac_key();
 
 private:
     /// internal sign method using crypto++ private key

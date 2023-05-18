@@ -297,12 +297,12 @@ ByteBuffer CertificateTrustListManager::RequestCrl(const std::string& url) const
   return ByteBuffer(r.text.begin(), r.text.end());
 }
 
-void CertificateTrustListManager::GetCtl(const security::HashedId8& rcaHash)
+bool CertificateTrustListManager::GetCtl(const security::HashedId8& rcaHash)
 {
   auto rca = rcaList.find(rcaHash);
   if (rca == rcaList.end()) {
     std::cerr << "RCA not found." << std::endl;
-    return;
+    return false;
   }
 
   std::string url = rca->second.dcUrl + std::string("getctl/") + HashedId8toString(rcaHash);
@@ -315,7 +315,7 @@ void CertificateTrustListManager::GetCtl(const security::HashedId8& rcaHash)
 
   if (ctl->content->present != Ieee1609Dot2Content_PR_signedData) {
     std::cerr << "Invalid CTL." << std::endl;
-    return;
+    return false;
   }
 
   SignedData* sd = ctl->content->choice.signedData;
@@ -324,7 +324,7 @@ void CertificateTrustListManager::GetCtl(const security::HashedId8& rcaHash)
   security::HashedId8 certHash = GetSignerDigest(*sd);
   if (certHash != rcaHash) {
     std::cerr << "Hash of RCA in CTL differs from saved RCA hash." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Hash of RCA certificate matches hash in received CTL." << std::endl;
@@ -333,7 +333,7 @@ void CertificateTrustListManager::GetCtl(const security::HashedId8& rcaHash)
   // Verify signature.
   if (!VerifySignedData(*sd)) {
     std::cerr << "Signed data could not be verified." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Signature of CTL verified succesfuly." << std::endl;
@@ -349,14 +349,16 @@ void CertificateTrustListManager::GetCtl(const security::HashedId8& rcaHash)
   CtlFormat_t& tbsCtl = data102941->content.choice.certificateTrustListRca;
 
   ParseRcaCtl(tbsCtl);
+
+  return true;
 }
 
-void CertificateTrustListManager::GetDeltaCtl(const security::HashedId8& rcaHash, unsigned sequenceNumber)
+bool CertificateTrustListManager::GetDeltaCtl(const security::HashedId8& rcaHash, unsigned sequenceNumber)
 {
   auto rca = rcaList.find(rcaHash);
   if (rca == rcaList.end()) {
     std::cerr << "RCA not found." << std::endl;
-    return;
+    return false;
   }
 
   std::string url = rca->second.dcUrl + std::string("getctl/") + HashedId8toString(rcaHash) + std::to_string(sequenceNumber);
@@ -372,7 +374,7 @@ void CertificateTrustListManager::GetDeltaCtl(const security::HashedId8& rcaHash
   security::HashedId8 certHash = GetSignerDigest(*sd);
   if (certHash != rcaHash) {
     std::cerr << "Hash of RCA in CTL differs from saved RCA hash." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Hash of RCA certificate matches received hash." << std::endl;
@@ -381,7 +383,7 @@ void CertificateTrustListManager::GetDeltaCtl(const security::HashedId8& rcaHash
   // Verify signature.
   if (!VerifySignedData(*sd)) {
     std::cerr << "Signed data could not be verified." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Signature verified succesfuly." << std::endl;
@@ -397,14 +399,16 @@ void CertificateTrustListManager::GetDeltaCtl(const security::HashedId8& rcaHash
   CtlFormat_t& tbsCtl = data102941->content.choice.certificateTrustListRca;
 
   ParseRcaCtl(tbsCtl);
+
+  return true;
 }
 
-void CertificateTrustListManager::GetCrl(const security::HashedId8& rcaHash)
+bool CertificateTrustListManager::GetCrl(const security::HashedId8& rcaHash)
 {
   auto rca = rcaList.find(rcaHash);
   if (rca == rcaList.end()) {
     std::cerr << "RCA not found." << std::endl;
-    return;
+    return false;
   }
 
   std::string url = rca->second.dcUrl + std::string("getcrl/") + HashedId8toString(rcaHash);
@@ -420,7 +424,7 @@ void CertificateTrustListManager::GetCrl(const security::HashedId8& rcaHash)
   security::HashedId8 certHash = GetSignerDigest(*sd);
   if (certHash != rcaHash) {
     std::cerr << "Hash of RCA in CTL differs from saved RCA hash." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Hash of RCA certificate matches received hash." << std::endl;
@@ -429,7 +433,7 @@ void CertificateTrustListManager::GetCrl(const security::HashedId8& rcaHash)
   // Verify signature.
   if (!VerifySignedData(*sd)) {
     std::cerr << "Signed data could not be verified." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Signature verified succesfuly." << std::endl;
@@ -446,9 +450,11 @@ void CertificateTrustListManager::GetCrl(const security::HashedId8& rcaHash)
   ToBeSignedCrl& tbsCrl = data102941->content.choice.certificateRevocationList;
 
   ParseRcaCrl(tbsCrl);
+
+  return true;
 }
 
-void CertificateTrustListManager::GetEctl()
+bool CertificateTrustListManager::GetEctl()
 {
   if (!ectlTlmCert) {
     LoadEctlTlmCert();
@@ -465,7 +471,7 @@ void CertificateTrustListManager::GetEctl()
 
   if (ectl->content->present != Ieee1609Dot2Content_PR_signedData) {
     std::cerr << "Invalid ECTL." << std::endl;
-    return;
+    return false;
   }
 
   SignedData* sd = ectl->content->choice.signedData;
@@ -474,7 +480,7 @@ void CertificateTrustListManager::GetEctl()
   security::HashedId8 certHash = GetSignerDigest(*sd);
   if (certHash != ectlTlmCertDigest) {
     std::cerr << "TLM certificate differs from saved ECTL TLM" << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Hash of TLM certificate matches received hash." << std::endl;
@@ -483,7 +489,7 @@ void CertificateTrustListManager::GetEctl()
   // Verify signature.
   if (!VerifySignedData(*sd)) {
     std::cerr << "Signed data could not be verified." << std::endl;
-    return;
+    return false;
   }
   else {
     std::cout << "Signature verified succesfuly." << std::endl;
@@ -499,6 +505,8 @@ void CertificateTrustListManager::GetEctl()
   CtlFormat_t& tbsCtl = data102941->content.choice.certificateTrustListTlm;
 
   ParseTlmCtl(tbsCtl);
+
+  return true;
 }
 
 CertificateTrustListManager::RcaEntry CertificateTrustListManager::GetRca(const vanetza::security::HashedId8& rcaHash)

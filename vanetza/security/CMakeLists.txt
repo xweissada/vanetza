@@ -6,6 +6,19 @@ add_vanetza_component(security
     ecc_point.cpp
     ecdsa256.cpp
     hashed_id.cpp
+    encryption_parameter.cpp
+    header_field.cpp
+    hmac.cpp
+    int_x.cpp
+    length_coding.cpp
+    naive_certificate_provider.cpp
+    null_certificate_provider.cpp
+    null_certificate_validator.cpp
+    payload.cpp
+    persistence.cpp
+    public_key.cpp
+    recipient_info.cpp
+    region.cpp
     secured_message.cpp
     sha.cpp
     sign_service.cpp

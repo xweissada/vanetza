@@ -421,22 +421,13 @@ void BackendCryptoPP::encrypt_ecies(const ByteBuffer& data, MessageEncryptionPar
     std::copy_n(tag, params.tag.size(), params.tag.data());
 }
 
-KeyTag BackendCryptoPP::create_tag(const ByteBuffer& data, HmacKey& hmacKey)
+HmacKey BackendCryptoPP::generate_hmac_key()
 {
-    KeyTag keyTag;
+    HmacKey hmacKey;
 
-    // Generate random 32 byte HMAC key.
     m_prng.GenerateBlock(hmacKey.data(), hmacKey.size());
 
-    // Calculate tag.
-    CryptoPP::HMAC<CryptoPP::SHA256> mac(hmacKey.data(), hmacKey.size());
-    CryptoPP::byte tag[hmacKey.size()];
-    mac.Update(data.data(), data.size());
-    mac.Final(tag);
-
-    // Tag is truncated to leftmost 128 bits.
-    std::copy_n(tag, keyTag.size(), keyTag.data());
-    return keyTag;
+    return hmacKey;
 }
 
 } // namespace security

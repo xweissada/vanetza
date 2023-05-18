@@ -2,6 +2,7 @@
 
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/ecdsa256.hpp>
+#include <vanetza/security/hmac.hpp>
 
 #include <vanetza/asn1/pki/EtsiTs102941Data.h>
 #include <vanetza/asn1/pki/InnerEcRequestSignedForPop.h>

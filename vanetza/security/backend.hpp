@@ -38,9 +38,6 @@ struct MessageEncryptionParams
     ECIES ecies;
 };
 
-using HmacKey = std::array<uint8_t, 32>;
-using KeyTag = std::array<uint8_t, 16>;
-
 /**
  * Interface to cryptographic features
  */

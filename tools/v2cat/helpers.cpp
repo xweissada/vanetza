@@ -2,9 +2,6 @@
 #include <vanetza/security/sha.hpp>
 #include <vanetza/asn1/asn1c_conversion.hpp>
 
-
-
-
 #include <vanetza/security/backend_openssl.hpp>
 #include <vanetza/asn1/pki/CtlFormat.h>
 #include <vanetza/asn1/pki/EtsiTs102941Data.h>
@@ -131,9 +128,8 @@ bool VerifySignedData(const SignedData& signedData, const EtsiTs103097Certificat
     signerIdentifierBuf = vanetza::asn1::encode_oer(asn_DEF_EtsiTs103097Certificate, cert);
   }
   else if (signedData.signer.present == SignerIdentifier_PR_self) {
-    signedData.tbsData->payload->data->content->choice.unsecuredData;
-    vanetza::ByteBuffer data(signedData.tbsData->payload->data->content->choice.unsecuredData.buf,
-                    signedData.tbsData->payload->data->content->choice.unsecuredData.buf + signedData.tbsData->payload->data->content->choice.unsecuredData.size);
+    OCTET_STRING& unsecuredData = signedData.tbsData->payload->data->content->choice.unsecuredData;
+    vanetza::ByteBuffer data(unsecuredData.buf, unsecuredData.buf + unsecuredData.size);
     vanetza::asn1::asn1c_oer_wrapper<InnerEcRequest> innerEc {asn_DEF_InnerEcRequest};
     innerEc.decode(data);
     uncompressed = DecompressPoint(innerEc->publicKeys.verificationKey.choice.ecdsaNistP256);

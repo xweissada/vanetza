@@ -303,7 +303,7 @@ bool CertificateManager::ParseEnrolmentResponse(const vanetza::ByteBuffer& respo
     return false;
   }
 
-  enrolmentCredential = (EtsiTs103097Certificate_t*)innerEcResponse.certificate;
+  enrolmentCredential = (EtsiTs103097Certificate_t*)vanetza::asn1::copy(asn_DEF_EtsiTs103097Certificate, innerEcResponse.certificate);
   return true;
 }
 
@@ -546,7 +546,7 @@ bool CertificateManager::ParseAuthorizationResponse(const vanetza::ByteBuffer& r
     return false;
   }
 
-  authorizationTicket = (EtsiTs103097Certificate_t*)innerAtResponse.certificate;
+  authorizationTicket = (EtsiTs103097Certificate_t*)vanetza::asn1::copy(asn_DEF_EtsiTs103097Certificate, innerAtResponse.certificate);
   return true;
 }
 

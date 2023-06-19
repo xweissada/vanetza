@@ -329,18 +329,18 @@ bool CertificateManager::RequestEc()
 
 void CertificateManager::GenerateAtKeys(PublicVerificationKey& verKey)
 {
-  atVerKeyPair = backend.generate_key_pair();
+  verificationKeyPair = backend.generate_key_pair();
 
   verKey.present = PublicVerificationKey_PR_ecdsaNistP256;
-  if (atVerKeyPair.public_key.y.back() % 2) {
+  if (verificationKeyPair.public_key.y.back() % 2) {
     verKey.choice.ecdsaNistP256.present = EccP256CurvePoint_PR_compressed_y_1;
     OCTET_STRING& verKeyStr = verKey.choice.ecdsaNistP256.choice.compressed_y_1;
-    OCTET_STRING_fromBuf(&verKeyStr, (char*)atVerKeyPair.public_key.x.data(), atVerKeyPair.public_key.x.size());
+    OCTET_STRING_fromBuf(&verKeyStr, (char*)verificationKeyPair.public_key.x.data(), verificationKeyPair.public_key.x.size());
   }
   else {
     verKey.choice.ecdsaNistP256.present = EccP256CurvePoint_PR_compressed_y_0;
     OCTET_STRING& verKeyStr = verKey.choice.ecdsaNistP256.choice.compressed_y_0;
-    OCTET_STRING_fromBuf(&verKeyStr, (char*)atVerKeyPair.public_key.x.data(), atVerKeyPair.public_key.x.size());
+    OCTET_STRING_fromBuf(&verKeyStr, (char*)verificationKeyPair.public_key.x.data(), verificationKeyPair.public_key.x.size());
   }
 
   vanetza::ByteBuffer verKeyBuf = vanetza::asn1::encode_oer(asn_DEF_PublicVerificationKey, &verKey);
@@ -426,7 +426,7 @@ void CertificateManager::ConstructSignedExternalPayload(Ieee1609Dot2Data& etsi10
   vanetza::ByteBuffer signatureInput(64);
   std::copy_n(tbsDataDigest.begin(), tbsDataDigest.size(), signatureInput.data());
   std::copy_n(signerIdentifierDigest.begin(), signerIdentifierDigest.size(), signatureInput.data() + 32);
-  ecdsa256::PrivateKey privKey = verificationKeyPair.private_key; // Private key corresponding to EC's verification key
+  ecdsa256::PrivateKey privKey = canonicalKeyPair.private_key; // Private key corresponding to EC's verification key
   EcdsaSignature signature = backend.sign_data(privKey, signatureInput);
 
   signedData->signature.present = Signature_PR_ecdsaNistP256Signature;

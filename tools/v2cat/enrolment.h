@@ -136,14 +136,13 @@ private:
 private:
   std::string itssId; ///< Canonical identifier of ITS-S.
   vanetza::security::ecdsa256::KeyPair canonicalKeyPair; ///< ITS-S keypair.
-  vanetza::security::ecdsa256::KeyPair verificationKeyPair; ///< Verification keypair used for EC request signing.
+  vanetza::security::ecdsa256::KeyPair verificationKeyPair; ///< Verification keypair used for EC/AT request signing.
   vanetza::security::BackendCryptoPP backend; ///< Cryptographic backend.
   CertificateTrustListManager::RcaEntry rca; ///< Root certificate authority.
   EtsiTs103097Certificate_t* enrolmentCredential; ///< Enrolment credential.
   EtsiTs103097Certificate_t* authorizationTicket; ///< Authorization ticket.
   uint64_t ecGenerationTime; ///< Generation time of EC Request
 
-  vanetza::security::ecdsa256::KeyPair atVerKeyPair; ///< Verification keypair used for AT request signing.
   vanetza::security::HmacKey hmacKey; ///< HMAC key for AT request.
   vanetza::security::KeyTag keyTag; ///< Tag of public keys for AT request.
 };

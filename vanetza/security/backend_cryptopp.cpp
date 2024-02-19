@@ -397,14 +397,14 @@ void BackendCryptoPP::encrypt_ecies(const ByteBuffer& data, MessageEncryptionPar
     CryptoPP::ECP::Point z = agreeAlg.AgreeWithEphemeralPrivateKey(groupParams, pk.GetPublicPrecomputation(), x);
 
     // Derive keys.
-    CryptoPP::byte digest[CryptoPP::SHA256::DIGESTSIZE];
+    unsigned char digest[CryptoPP::SHA256::DIGESTSIZE];
     CryptoPP::SHA256().CalculateDigest(digest, params.p1.data(), params.p1.size());
     CryptoPP::ConstByteArrayParameter p1(digest, CryptoPP::SHA256::DIGESTSIZE, true);
     CryptoPP::SecByteBlock derivedKey(48);
     derivAlg.Derive(groupParams, derivedKey, derivedKey.size(), z, q, CryptoPP::MakeParameters(CryptoPP::Name::KeyDerivationParameters(), p1));
 
-    CryptoPP::byte* cipherKey = derivedKey.data();
-    CryptoPP::byte* macKey = derivedKey.data() + data.size();
+    unsigned char* cipherKey = derivedKey.data();
+    unsigned char* macKey = derivedKey.data() + data.size();
 
     // Calculate cipher.
     if (data.size()) {
@@ -413,7 +413,7 @@ void BackendCryptoPP::encrypt_ecies(const ByteBuffer& data, MessageEncryptionPar
 
     // Calculate tag.
     CryptoPP::HMAC<CryptoPP::SHA256> mac(macKey, 32);
-    CryptoPP::byte tag[32];
+    unsigned char tag[32];
     mac.Update(params.cipher.data(), data.size());
     mac.Final(tag);
 

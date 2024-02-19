@@ -14,7 +14,7 @@ KeyTag create_hmac_tag(const ByteBuffer& data, const HmacKey& hmacKey)
 
     // Calculate tag.
     CryptoPP::HMAC<CryptoPP::SHA256> mac(hmacKey.data(), hmacKey.size());
-    CryptoPP::byte tag[hmacKey.size()];
+    unsigned char tag[hmacKey.size()];
     mac.Update(data.data(), data.size());
     mac.Final(tag);
 

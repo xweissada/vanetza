@@ -384,7 +384,7 @@ void BackendCryptoPP::encrypt_ecies(const ByteBuffer& data, MessageEncryptionPar
     CryptoPP::DL_KeyAgreementAlgorithm_DH<CryptoPP::ECP::Point, CryptoPP::IncompatibleCofactorMultiplication> agreeAlg;
     CryptoPP::DL_KeyDerivationAlgorithm_P1363<CryptoPP::ECP::Point, false, CryptoPP::P1363_KDF2<CryptoPP::SHA256>> derivAlg;
     CryptoPP::DL_EncryptionAlgorithm_Xor<CryptoPP::HMAC<CryptoPP::SHA256>, false> encAlg;
-    PublicKey pk = m_public_cache[params.encryptionPubKey];
+    Ecdsa256::PublicKey pk = m_public_cache[params.encryptionPubKey];
     CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> groupParams = pk.AccessGroupParameters();
 
     // Generate ephemeral keypair.

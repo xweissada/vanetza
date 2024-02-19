@@ -15,10 +15,6 @@ using Sha384Digest = std::array<uint8_t, 48>;
 Sha256Digest calculate_sha256_digest(const uint8_t* data, std::size_t len);
 Sha384Digest calculate_sha384_digest(const uint8_t* data, std::size_t len);
 
-using Sha384Digest = std::array<uint8_t, 48>;
-
-Sha384Digest calculate_sha384_digest(uint8_t* data, std::size_t len);
-
 } // namespace security
 } // namespace vanetza
 

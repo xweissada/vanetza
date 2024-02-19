@@ -72,7 +72,7 @@ private:
   /// @param data Data to be encrypted
   /// @param recipient Certificate of recipient.
   /// @param params Encryption parameters.
-  void ConstructEncryptedData(Ieee1609Dot2Data& etsi103097Encrypted, const vanetza::ByteBuffer& data, const EtsiTs103097Certificate_t* recipient, vanetza::security::MessageEncryptionParams& params);
+  void ConstructEncryptedData(Ieee1609Dot2Data& etsi103097Encrypted, const vanetza::ByteBuffer& data, const vanetza::security::v3::Certificate& recipient, vanetza::security::MessageEncryptionParams& params);
 
   /// @brief Construct ETSI TS 102 941 Data structure.
   /// @param data102941 ETSI TS 102 941 Data structure.

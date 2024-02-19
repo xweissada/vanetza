@@ -1,6 +1,6 @@
-#include <vanetza/security/persistence.hpp>
 #include <vanetza/asn1/pki/EtsiTs103097Certificate.h>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/security/v2/persistence.hpp>
 
 #include <iostream>
 
@@ -76,10 +76,10 @@ int main(int argc, const char** argv)
     std::string rcaCertPath = vm["cert"].as<std::string>();
     std::string dcUrl = vm["dc"].as<std::string>();
 
-    EtsiTs103097Certificate_t* rcaCert = vanetza::asn1::allocate<EtsiTs103097Certificate_t>();
+    vanetza::security::v3::Certificate rcaCert;
     LoadCertificate(rcaCertPath, rcaCert);
 
-    CertificateTrustListManager ctlm(*rcaCert, dcUrl);
+    CertificateTrustListManager ctlm(rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
     if (!ctlm.GetCtl(certHash))
@@ -102,16 +102,16 @@ int main(int argc, const char** argv)
     std::string keyPath = vm["canonkey"].as<std::string>();
     std::string itsId = vm["id"].as<std::string>();
 
-    EtsiTs103097Certificate_t* rcaCert = vanetza::asn1::allocate<EtsiTs103097Certificate_t>();
+    vanetza::security::v3::Certificate rcaCert;
     LoadCertificate(rcaCertPath, rcaCert);
 
-    CertificateTrustListManager ctlm(*rcaCert, dcUrl);
+    CertificateTrustListManager ctlm(rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
     if (!ctlm.GetCtl(certHash))
       return 1;
 
-    ecdsa256::KeyPair canonicalKeyPair = load_private_key_from_file(keyPath);
+    ecdsa256::KeyPair canonicalKeyPair = v2::load_private_key_from_file(keyPath);
 
     CertificateManager cm(itsId, canonicalKeyPair, ctlm.GetRca(certHash));
     if (!cm.RequestEc()) {
@@ -135,22 +135,22 @@ int main(int argc, const char** argv)
     std::string keyPath = vm["verkey"].as<std::string>();
     std::string ecPath = vm["ec"].as<std::string>();
 
-    EtsiTs103097Certificate_t* rcaCert = vanetza::asn1::allocate<EtsiTs103097Certificate_t>();
+    vanetza::security::v3::Certificate rcaCert;
     LoadCertificate(rcaCertPath, rcaCert);
 
-    CertificateTrustListManager ctlm(*rcaCert, dcUrl);
+    CertificateTrustListManager ctlm(rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
     if (!ctlm.GetCtl(certHash))
       return 1;
 
-    ecdsa256::KeyPair verKeyPair = load_private_key_from_file(keyPath);
+    ecdsa256::KeyPair verKeyPair = v2::load_private_key_from_file(keyPath);
 
     CertificateManager cm("", verKeyPair, ctlm.GetRca(certHash));
 
-    EtsiTs103097Certificate_t* enrolmentCredential = vanetza::asn1::allocate<EtsiTs103097Certificate_t>();
+    vanetza::security::v3::Certificate enrolmentCredential;
     LoadCertificate(ecPath, enrolmentCredential);
-    cm.LoadEc(enrolmentCredential);
+    cm.LoadEc(&*enrolmentCredential);
     if (!cm.RequestAt()) {
       std::cerr << "Authorization failed failed." << std::endl;
       return 1;
@@ -172,16 +172,16 @@ int main(int argc, const char** argv)
     std::string keyPath = vm["canonkey"].as<std::string>();
     std::string itsId = vm["id"].as<std::string>();
 
-    EtsiTs103097Certificate_t* rcaCert = vanetza::asn1::allocate<EtsiTs103097Certificate_t>();
+    vanetza::security::v3::Certificate rcaCert;
     LoadCertificate(rcaCertPath, rcaCert);
 
-    CertificateTrustListManager ctlm(*rcaCert, dcUrl);
+    CertificateTrustListManager ctlm(rcaCert, dcUrl);
 
     vanetza::security::HashedId8 certHash = CalculateCertificateDigest(*rcaCert);
     if (!ctlm.GetCtl(certHash))
       return 1;
 
-    ecdsa256::KeyPair canonicalKeyPair = load_private_key_from_file(keyPath);
+    ecdsa256::KeyPair canonicalKeyPair = v2::load_private_key_from_file(keyPath);
 
     CertificateManager cm(itsId, canonicalKeyPair, ctlm.GetRca(certHash));
     if (!cm.RequestEc()) {

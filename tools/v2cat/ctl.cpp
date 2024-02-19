@@ -25,11 +25,11 @@ CertificateTrustListManager::CertificateTrustListManager() :
   LoadEctlTlmCert();
 }
 
-CertificateTrustListManager::CertificateTrustListManager(EtsiTs103097Certificate_t& rcaCert, std::string& rcaDcUrl) :
-  ectlSequenceNumber(0), ectlTlmCert(nullptr)
+CertificateTrustListManager::CertificateTrustListManager(vanetza::security::v3::Certificate& rcaCert, std::string& rcaDcUrl) :
+  ectlSequenceNumber(0)
 {
-  security::HashedId8 hash = CalculateCertificateDigest(rcaCert);
-  AddRca(rcaCert);
+  security::HashedId8 hash = *vanetza::security::v3::calculate_hash(*rcaCert);
+  AddRca(*rcaCert);
   AddDc(hash, rcaDcUrl);
 }
 
@@ -44,8 +44,6 @@ CertificateTrustListManager::~CertificateTrustListManager()
       asn1::free(asn_DEF_EtsiTs103097Certificate, rca.second.aa.cert);
     }
   }
-
-  asn1::free(asn_DEF_EtsiTs103097Certificate, ectlTlmCert);
 }
 
 void CertificateTrustListManager::LoadEctlTlmCert()
@@ -66,15 +64,14 @@ void CertificateTrustListManager::LoadEctlTlmCert()
     stream.write((char*)&ectlTlmCertBuf[0], ectlTlmCertBuf.size());
     stream.close();
   }
-  ectlTlmCert = asn1::allocate<EtsiTs103097Certificate_t>();
-  asn1::decode_oer(asn_DEF_EtsiTs103097Certificate, (void **)&ectlTlmCert, ectlTlmCertBuf);
+  ectlTlmCert.decode(ectlTlmCertBuf);
 
-  std::cout << "Got TLM certificate: " << ectlTlmCert->toBeSigned.id.choice.name.buf << std::endl;
+  std::cout << "Got TLM certificate: " << (*ectlTlmCert).toBeSigned.id.choice.name.buf << std::endl;
 }
 
 void CertificateTrustListManager::AddRca(EtsiTs103097Certificate_t& cert)
 {
-  security::HashedId8 certHash = CalculateCertificateDigest(cert);
+  security::HashedId8 certHash = *vanetza::security::v3::calculate_hash(cert);
 
   auto it = rcaList.find(certHash);
   if (it != rcaList.end()) {
@@ -229,9 +226,9 @@ void CertificateTrustListManager::ParseTlmCtl(const CtlFormat_t& ctl)
 
   for (unsigned i = 0; i < ctl.ctlCommands.list.count; i++) {
     if (ctl.ctlCommands.list.array[i]->choice.add.present == CtlEntry_PR_rca) {
-      EtsiTs103097Certificate_t& cert = ctl.ctlCommands.list.array[i]->choice.add.choice.rca.selfsignedRootCa;
-      ByteBuffer certBuf = asn1::encode_oer(asn_DEF_Certificate, &cert);
-      AddRca(cert);
+      EtsiTs103097Certificate_t *cert = (EtsiTs103097Certificate_t *)asn1::copy(asn_DEF_EtsiTs103097Certificate, &ctl.ctlCommands.list.array[i]->choice.add.choice.rca.selfsignedRootCa);
+      // ByteBuffer certBuf = asn1::encode_oer(asn_DEF_Certificate, cert);
+      AddRca(*cert);
     }
     else if (ctl.ctlCommands.list.array[i]->choice.add.present == CtlEntry_PR_dc) {
       DcEntry_t& dc = ctl.ctlCommands.list.array[i]->choice.add.choice.dc;
@@ -243,10 +240,10 @@ void CertificateTrustListManager::ParseTlmCtl(const CtlFormat_t& ctl)
       }
     }
     else if (ctl.ctlCommands.list.array[i]->choice.add.present == CtlEntry_PR_tlm) {
-      EtsiTs103097Certificate_t& cert = ctl.ctlCommands.list.array[i]->choice.add.choice.tlm.selfSignedTLMCertificate;
-      ByteBuffer certBuf = asn1::encode_oer(asn_DEF_EtsiTs103097Certificate, &cert);
-      security::HashedId8 certHash = CalculateCertificateDigest(cert);
-      security::HashedId8 tlmCertHash = CalculateCertificateDigest(*ectlTlmCert);
+      EtsiTs103097Certificate_t *cert = (EtsiTs103097Certificate_t *)asn1::copy(asn_DEF_EtsiTs103097Certificate, &ctl.ctlCommands.list.array[i]->choice.add.choice.tlm.selfSignedTLMCertificate);
+      // ByteBuffer certBuf = asn1::encode_oer(asn_DEF_EtsiTs103097Certificate, cert);
+      security::HashedId8 certHash = *vanetza::security::v3::calculate_hash(*cert);
+      security::HashedId8 tlmCertHash = *vanetza::security::v3::calculate_hash(*ectlTlmCert);
       if (certHash != tlmCertHash) {
         std::cerr << "TLM certificate in ECTL does not match correct TLM" << std::endl;
       }
@@ -456,11 +453,11 @@ bool CertificateTrustListManager::GetCrl(const security::HashedId8& rcaHash)
 
 bool CertificateTrustListManager::GetEctl()
 {
-  if (!ectlTlmCert) {
+  if (!ectlTlmCert.size()) {
     LoadEctlTlmCert();
   }
 
-  security::HashedId8 ectlTlmCertDigest = CalculateCertificateDigest(*ectlTlmCert);
+  security::HashedId8 ectlTlmCertDigest = *vanetza::security::v3::calculate_hash(*ectlTlmCert);
   std::string hash = HashedId8toString(ectlTlmCertDigest);
   std::string url = ectlUrlL0 + std::string("getectl/") + hash;
   std::cout << "Requesting ECTL from TLM (" << url << ")." << std::endl;

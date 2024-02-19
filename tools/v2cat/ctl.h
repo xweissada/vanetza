@@ -1,5 +1,7 @@
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/v3/certificate.hpp>
+#include <vanetza/asn1/pki/CtlFormat.h>
+#include <vanetza/asn1/pki/ToBeSignedCrl.h>
 #include <map>
 
 static const char* ectlUrlL0 = "https://cpoc.jrc.ec.europa.eu/L0/";
@@ -29,7 +31,7 @@ public:
   /// @brief Constructor for use with root CA.
   /// @param rcaCert   Certificate of root CA.
   /// @param rcaDcUrl  URL of distribution centre for root CA.
-  CertificateTrustListManager(EtsiTs103097Certificate_t& rcaCert, std::string& rcaDcUrl);
+  CertificateTrustListManager(vanetza::security::v3::Certificate& rcaCert, std::string& rcaDcUrl);
 
   /// @brief Destructor, frees the list.
   ~CertificateTrustListManager();
@@ -119,5 +121,5 @@ private:
 private:
   std::map<vanetza::security::HashedId8, RcaEntry> rcaList; ///< List of RCA entries.
   unsigned ectlSequenceNumber; ///< Sequence number of last valid ECTL.
-  EtsiTs103097Certificate_t *ectlTlmCert; ///< Certificate of ECTL TLM.
+  vanetza::security::v3::Certificate ectlTlmCert; ///< Certificate of ECTL TLM.
 };

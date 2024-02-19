@@ -1,13 +1,14 @@
+#include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
-#include <vanetza/security/sha.hpp>
-#include <vanetza/asn1/asn1c_conversion.hpp>
+// #include <vanetza/security/sha.hpp>
+// #include <vanetza/asn1/asn1c_conversion.hpp>
 
-#include <vanetza/security/backend_openssl.hpp>
-#include <vanetza/asn1/pki/CtlFormat.h>
-#include <vanetza/asn1/pki/EtsiTs102941Data.h>
+// #include <vanetza/security/backend_openssl.hpp>
+// #include <vanetza/asn1/pki/CtlFormat.h>
+// #include <vanetza/asn1/pki/EtsiTs102941Data.h>
 #include <vanetza/asn1/pki/InnerEcRequest.h>
 
-#include <boost/variant/get.hpp>
+// #include <boost/variant/get.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -38,7 +39,7 @@ HashedId8 CalculateCertificateDigest(const EtsiTs103097Certificate_t& cert)
   return id;
 }
 
-std::string HashedId8toString(const vanetza::security::HashedId8& hash)
+std::string HashedId8toString(const HashedId8& hash)
 {
   std::string hashString;
   for (const auto& byte: hash) {
@@ -175,9 +176,10 @@ HashedId8 GetSignerDigest(const SignedData& signedData)
   return digest;
 }
 
-void LoadCertificate(const std::string& path, EtsiTs103097Certificate_t* cert)
+void LoadCertificate(const std::string& path, vanetza::security::v3::Certificate &cert)
 {
   std::ifstream stream(path, std::ios::in | std::ios::binary);
   vanetza::ByteBuffer buf((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-  vanetza::asn1::decode_oer(asn_DEF_EtsiTs103097Certificate, (void**)&cert, buf);
+  cert.decode(buf);
+  // vanetza::asn1::decode_oer(asn_DEF_EtsiTs103097Certificate, (void**)&(*cert), buf);
 }

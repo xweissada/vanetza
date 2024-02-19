@@ -19,10 +19,6 @@ class BackendCryptoPP : public Backend
 public:
     using Ecdsa256 = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>;
     using Ecdsa384 = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA384>;
-    using PrivateKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey;
-    using PublicKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey;
-    using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
-    using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
     using Point = CryptoPP::ECP::Point;
     using AesEncryption = CryptoPP::CCM<CryptoPP::AES>::Encryption;
     using AesDecryption = CryptoPP::CCM<CryptoPP::AES>::Decryption;

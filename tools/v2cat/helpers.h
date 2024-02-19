@@ -3,10 +3,11 @@
 #include <vanetza/common/byte_buffer.hpp>
 
 #include <vanetza/security/ecdsa256.hpp>
-#include <vanetza/security/basic_elements.hpp>
 
 #include <vanetza/asn1/pki/EtsiTs103097Certificate.h>
 #include <vanetza/asn1/pki/SignedData.h>
+
+#include <vanetza/security/v3/certificate.hpp>
 
 #define JAN12004 1072915200 // unix time of 00:00:00 UTC, 1 January, 2004
 
@@ -44,4 +45,4 @@ vanetza::security::HashedId8 GetSignerDigest(const SignedData& signedData);
 /// @brief Load certificate from file and fill ASN.1 structure with its content.
 /// @param path     Path to certificate.
 /// @param cert     ASN.1 structure to parse into.
-void LoadCertificate(const std::string& path, EtsiTs103097Certificate_t* cert);
+void LoadCertificate(const std::string& path, vanetza::security::v3::Certificate &cert);
